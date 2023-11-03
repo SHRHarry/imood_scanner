@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="jumbotron mt-13" style="white-space: nowrap; overflow-x: auto;">
+    <style>
+        #imgContainer {
+          width: 600px;
+          height: 600px;
+          background-color: black;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+
+          border-radius: 5px;
+          border: 1px solid #ffffff; /* 設置邊界寬度和顏色 */
+          padding: 5px; /* 設置內邊距，這會影響內容和邊界之間的距離 */
+          margin: 5px; /* 設置外邊距，這會影響元素與其他元素之間的距離 */
+        }
+      
+        #imgShow, #imgFace, #imgValAro {
+            max-width: 100%;
+            height: auto;
+        }
+    </style>
+    <div class="image-container" style="display: inline-block;">
+        <figure class="figure" style="flex: 1; text-align: left;">
+            <div id="imgContainer">
+                <img  id="imgShow" />
+            </div>
+            <figcaption class="bd-placeholder-img figure-caption text-center">原圖</figcaption>
+        </figure>
+    </div>
+    <div class="image-container" style="display: inline-block;">
+        <figure class="figure" style="flex: 1; text-align: center;">
+            <div id="imgContainer">
+                <img  id="imgFace"/>
+            </div>
+            <figcaption class="bd-placeholder-img figure-caption text-center">Face ROI</figcaption>
+        </figure>
+    </div>
+    <div class="image-container" style="display: inline-block;">
+        <figure class="figure" style="flex: 1; text-align: right;">
+            <div id="imgContainer">
+                <img  id="imgValAro"/>
+            </div>
+            <figcaption class="bd-placeholder-img figure-caption text-center">Valence & Arousal</figcaption>
+        </figure>
+    </div>
+    <br>
+    <p>Expression： <span id="resultExpression"></span></p>
+    <p>Valence： <span id="resultValence"></span></p>
+    <p>Arousal： <span id="resultArousal"></span></p>
+    <p>Time Span： <span id="resultTimeSpan"></span></p>
+    <br>
+    <div class="mb-3">
+        <label class="form-label" for="customFile">上傳圖片</label>
+        <input type="file" class="form-control" id="ImgData" accept=".png,.jpg,.jpeg,.bmp", onchange="imgToBase64()">
+    </div>
+    <a class="btn btn-lg btn-primary" role="button" type="file", id="ImgData", accept=".png,.jpg,.jpeg,.bmp" onclick="submit()">預測</a>
+    <script src="../static/js/inference.js"></script>
+</div>
+
+{% endblock  %}
