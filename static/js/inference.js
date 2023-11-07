@@ -108,7 +108,7 @@ function imgToBase64()
             img_show.src = reader.result;
         }
     }
-    getData('http://127.0.0.1:8000/api/clean_va_fig')
+    getData('http://140.116.62.26:8000/api/clean_va_fig')
 }
 
 function submit(){
@@ -119,7 +119,7 @@ function submit(){
         img_data
     }
     
-    postData('http://127.0.0.1:8000/api/predict', data)
+    postData('http://140.116.62.26:8000/api/predict', data)
     .then(response => {
         console.log(response);
     })

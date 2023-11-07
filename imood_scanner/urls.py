@@ -25,7 +25,6 @@ urlpatterns = [
     path('logout', log_out, name='Logout'),
     path('inference', inference, name="Inference"),
     path('admin/', admin.site.urls),
-    # path('api/update_va_fig', update_va_fig),
     path('api/clean_va_fig', clean_va_fig),
     path('api/predict', predict),
     path('api/grad_cam', grad_cam),

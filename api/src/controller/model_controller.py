@@ -3,6 +3,7 @@ import time
 import torch
 import torch.nn as nn
 import numpy as np
+from loguru import logger
 from threading import Thread
 from pytorch_grad_cam import GradCAM
 from pytorch_grad_cam.utils.image import show_cam_on_image
@@ -29,6 +30,7 @@ class ThreadWithReturnValue(Thread):
     
 class ModelThreadController(BaseThreadController):
     def __init__(self):
+        logger.info('ceate ModelThreadController instance')
         super().__init__()
         self.face_model = None
         self.model = None
@@ -45,7 +47,7 @@ class ModelThreadController(BaseThreadController):
         self.duration = None
     
     def clean_va_fig(self):
-        return {'va_fig': "data:image/jpeg;base64,"+_cv2_to_base64(create_empty_canvas(self.vis_size)).decode('utf-8')}
+        return {'va_fig': "data:image/png;base64,"+_cv2_to_base64(create_empty_canvas(self.vis_size)).decode('utf-8')}
     
     def upgate_va_fig(self):
         json_response = {'va_fig': None}
@@ -63,7 +65,7 @@ class ModelThreadController(BaseThreadController):
                 self.process.start()
                     
             except Exception as err:
-                print(f"[ERROR] | init_model | {err}")
+                logger.error(f"[ERROR] | init_model | {err}")
                 
             finally:
                 self.mutex.release()
@@ -81,7 +83,7 @@ class ModelThreadController(BaseThreadController):
                 rst = self.process.join()
                 
             except Exception as err:         
-                print(f"[ERROR] | start_get_face_roi | {err}")
+                logger.error(f"[ERROR] | start_get_face_roi | {err}")
 
             finally:            
                 self.mutex.release()
@@ -99,7 +101,7 @@ class ModelThreadController(BaseThreadController):
                 rst = self.process.join()
                 
             except Exception as err:         
-                print(f"[ERROR] | start_predict | {err}")
+                logger.error(f"[ERROR] | start_predict | {err}")
                 return None
 
             finally:            
@@ -118,7 +120,7 @@ class ModelThreadController(BaseThreadController):
                 rst = self.process.join()
                 
             except Exception as err:         
-                print(f"[ERROR] | start_get_attn_map | {err}")
+                logger.error(f"[ERROR] | start_get_attn_map | {err}")
                 return None
 
             finally:            
@@ -130,12 +132,13 @@ class ModelThreadController(BaseThreadController):
         try:
             self.face_model = FaceBoxes(timer_flag=False)
             self.model = pyramid_trans_expr2(img_size=300, num_classes=6)
-            checkpoint = torch.load(r"E:\MomProject\iMood\imood_scanner\api\src\checkpoint\[08-30]-[00-10]-model_best.pth")
+            checkpoint = torch.load("./api/src/checkpoint/[08-30]-[00-10]-model_best.pth")
             self.model = load_pretrained_weights(self.model, checkpoint)
     
             self.model.eval()
+            logger.info(f'self.face_model = {self.face_model}')
         except Exception as err:
-            print(f"[ERROR] | _load_model | {err}")
+            logger.error(f"[ERROR] | _load_model | {err}")
             self.face_model = None
             self.model = None
             
@@ -159,16 +162,15 @@ class ModelThreadController(BaseThreadController):
             
             vis_text = f"VA Predicton: {self.expression} | "
             for idx, value in enumerate(va_percentages):
-                # print(f"{class_list[idx]} = {value*100:.2f}%, ", end="")
                 vis_text += f"{class_list[idx]} {value*100:.2f}% | "
-            # print("\n")
             
-            self.pred_img = "data:image/jpeg;base64,"+_cv2_to_base64(vis_img(img_ori, dets=dets, text=vis_text, size=self.vis_size)).decode('utf-8')
-            self.va_fig = "data:image/jpeg;base64,"+_cv2_to_base64(insert_va_value(self.va_empty_fig.copy(), self.valence, self.arousal, img_size=self.vis_size)).decode('utf-8')
+            self.pred_img = "data:image/png;base64,"+_cv2_to_base64(vis_img(img_ori, dets=dets, text=vis_text, size=self.vis_size)).decode('utf-8')
+            self.va_fig = "data:image/png;base64,"+_cv2_to_base64(insert_va_value(self.va_empty_fig.copy(), self.valence, self.arousal, img_size=self.vis_size)).decode('utf-8')
+            logger.info(f'vis_text = {vis_text}')
             return (self.valence, self.arousal, self.expression, self.duration, self.pred_img, self.va_fig)
 
         except Exception as err:
-            print(f"[ERROR] | _predict | {err}")
+            logger.error(f"[ERROR] | _predict | {err}")
             self.face_model = None
             self.model = None
             self.pred_img = None
@@ -206,7 +208,6 @@ class ModelThreadController(BaseThreadController):
     
     def _softmax(self, x):
         x -= np.max(x, axis= 0, keepdims=True)
-        
         f_x = np.exp(x) / np.sum(np.exp(x), axis=0, keepdims=True)
 
         return f_x
@@ -223,10 +224,10 @@ class ModelThreadController(BaseThreadController):
             visualization = show_cam_on_image(np.float32(img) / 255, grayscale_cam)
             end = time.time()
             self.duration = float(end - start)
-            self.attn_map = "data:image/jpeg;base64,"+_cv2_to_base64(vis_img(visualization, size=self.vis_size)).decode('utf-8')
+            self.attn_map = "data:image/png;base64,"+_cv2_to_base64(vis_img(visualization, size=self.vis_size)).decode('utf-8')
             return (self.duration, self.attn_map)
         except Exception as err:
-            print(f"[ERROR] | _get_attn_map | {err}")
+            logger.error(f"[ERROR] | _get_attn_map | {err}")
             self.face_model = None
             self.model = None
             return None

@@ -2,7 +2,12 @@
 """Django's command-line utility for administrative tasks."""
 import os
 import sys
-from api.src.main_obj import AverageMeter, ProgressMeter, RecorderMeter1, RecorderMeter
+
+import_list = dir()
+if ("AverageMeter" not in import_list) and ("ProgressMeter" not in import_list) and ("RecorderMeter1" not in import_list) and ("RecorderMeter" not in import_list):
+    from api.src.main_obj import AverageMeter, ProgressMeter, RecorderMeter1, RecorderMeter
+    
+from django.core.management.commands.runserver import Command as Runserver
 
 def main():
     """Run administrative tasks."""
